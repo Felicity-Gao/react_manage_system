@@ -10,7 +10,10 @@ import defaultSettings from '../config/defaultSettings';
 
 export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
-  settings?: LayoutSettings;
+  settings?: LayoutSettings & {
+    pwa: boolean;
+    collapsed: boolean;
+  };
 }> {
   // 如果是登录页面，不执行
   if (history.location.pathname !== '/user/login') {
@@ -18,34 +21,40 @@ export async function getInitialState(): Promise<{
       const currentUser = await queryCurrent();
       return {
         currentUser,
-        settings: defaultSettings,
+        settings: defaultSettings
       };
     } catch (error) {
       history.push('/user/login');
     }
   }
   return {
-    settings: defaultSettings,
+    settings: defaultSettings
   };
 }
 
-export const layout = ({
-  initialState,
-}: {
-  initialState: { settings?: LayoutSettings; currentUser?: API.CurrentUser };
+export const layout = ({ initialState }: {
+  initialState: {
+    settings?: LayoutSettings & {
+      pwa: boolean;
+      collapsed: boolean;
+    }; currentUser?: API.CurrentUser
+  };
 }): BasicLayoutProps => {
   return {
-    rightContentRender: () => <RightContent />,
+    //rightContentRender: () => <RightContent />,
     disableContentMargin: false,
-    footerRender: () => <Footer />,
+    footerRender: false,
     onPageChange: () => {
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser?.userid && history.location.pathname !== '/user/login') {
         history.push('/user/login');
       }
     },
-    menuHeaderRender: undefined,
-    ...initialState?.settings,
+    headerRender: () => <RightContent />,
+    collapsedButtonRender: () => null,
+    //headerContentRender: () => <MenuFoldOutlined />,
+    //menuHeaderRender: false,
+    ...initialState.settings,
   };
 };
 
